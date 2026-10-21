@@ -150,3 +150,23 @@ def test_a_business_that_says_it_is_a_nonprofit_still_is(rules):
                  "Hope House is a community-based nonprofit.",
                  "Your gift is a tax-deductible donation."]:
         assert "nonprofit" in _site_ids(text, rules), text
+
+
+def test_a_churchs_or_law_firms_website_disqualifies(rules):
+    for text, signal in [("Join us for worship every Sunday at 10am.", "church"),
+                         ("Welcome to our church family!", "church"),
+                         ("Meet our senior pastor, Rev. Dan Lee.", "church"),
+                         ("Watch past sermons online.", "church"),
+                         ("Smith & Jones, attorneys at law.", "law_firm"),
+                         ("Our law firm has served Baltimore for 30 years.", "law_firm"),
+                         ("Talk to our personal injury lawyers today.", "law_firm")]:
+        assert signal in _site_ids(text, rules), text
+
+
+def test_care_homes_that_mention_church_or_lawyers_are_kept(rules):
+    for text in ["Residents enjoy weekly worship services and Sunday service in our chapel.",
+                 "We drive clients to church, the pharmacy and appointments.",
+                 "Please consult your attorney about long-term care planning.",
+                 "Lawn care and snow removal for commercial properties."]:
+        found = _site_ids(text, rules)
+        assert not found & {"church", "law_firm"}, text

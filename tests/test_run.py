@@ -289,3 +289,39 @@ def test_an_llcs_website_alone_cant_make_it_a_nonprofit(rules, srules, monkeypat
 
 def test_professional_services_is_no_longer_an_industry(srules):
     assert "Professional services" not in [f.name for _, fields in srules.groups for f in fields]
+
+
+# --- churches and law firms (the boss's rule) ---------------------------------------------------
+
+
+@pytest.mark.parametrize("overrides, reason", [
+    (dict(legal_business_name="NEW HOPE MINISTRIES IHS LLC"), "church"),
+    (dict(legal_business_name="GRACE BAPTIST CHURCH"), "church"),
+    (dict(dba_name="ST. JOHN'S PARISH"), "church"),
+    (dict(legal_business_name="CHURCH OF GOD IN CHRIST"), "church"),
+    (dict(legal_business_name="SMITH LAW FIRM, PLLC"), "law_firm"),
+    (dict(legal_business_name="JONES & BROWN ATTORNEYS AT LAW"), "law_firm"),
+    (dict(legal_business_name="KAREN DOE, ESQ."), "law_firm"),
+    (dict(legal_business_name="MILLER LAW LLC"), "law_firm"),
+    (dict(email="pat@millerlaw.com"), "law_firm"),
+    (dict(email="pat@gmail.com", website="www.smithlawfirm.com"), "law_firm"),
+])
+def test_churches_and_law_firms_are_never_leads(rules, srules, overrides, reason):
+    lead = leads.build_lead(business(srules, **overrides), None, rules, srules, 8, TODAY)
+    assert lead.score.disqualified and reason in lead.score.disqualify_reason
+
+
+@pytest.mark.parametrize("overrides", [
+    dict(legal_business_name="TEMPLE GRADING AND CONSTRUCTION COMPANY, INC.", email="j@templegrading.com"),
+    dict(legal_business_name="DELAWARE METALS INC", email="scott@delawaremetals.com"),
+    dict(legal_business_name="M-F ATHLETIC CO INC", email="jenn.lachapelle@mfathletic.com"),
+    dict(legal_business_name="LAWRENCE LAWN CARE LLC", email="mike@lawrencelawn.com"),
+    dict(legal_business_name="CHURCHILL HOME CARE LLC", email="amy@churchillcare.com"),
+    dict(legal_business_name="EXPRESSCARE OF BEL AIR LLC", email="s@goexpresscare.com"),
+    dict(legal_business_name="R.A. DAFFER CHURCH ORGANS INC", email="b@dafferorgans.com"),
+    dict(legal_business_name="CATHEDRAL ART METAL CO., INC.", email="d@cagift.com"),
+    dict(legal_business_name="CHURCH CHILDCARE CENTER, INC.", email="t@churchchild.com"),
+])
+def test_names_that_only_look_like_churches_or_law_firms_are_kept(rules, srules, overrides):
+    lead = leads.build_lead(business(srules, **overrides), None, rules, srules, 8, TODAY)
+    assert not lead.score.disqualified, lead.score.disqualify_reason

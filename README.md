@@ -105,12 +105,19 @@ Before any website is read:
   `.org` addresses in the list belong to for-profit companies).
 - **Government or school email** (.gov, .edu, .mil), and **national chains**
   (the `national_chains` list in `sba.yaml`).
+- **Churches and law firms** — never leads. Caught by name (Grace Baptist
+  Church, Church of God, New Hope Ministries, Law Offices of…, Attorneys at
+  Law, Esq.) or by an email or website domain like `smithlaw.com`. A business
+  merely named after a church (Church Organs Inc, Cathedral Art Metal) stays.
 
 After the website is read:
 
 - **Closed** — its website says it has closed or is closing for good
   ("permanently closed", "we have closed our doors", "last day of business").
   Hospice wording ("final days") and privacy policies don't count.
+- **A church or law firm by its website** — "join us for worship", "our
+  pastor", "attorneys at law", "our law firm". A care home offering residents
+  Sunday service, or a site saying "consult your attorney", doesn't count.
 - **Disqualified by its website** — a nonprofit (only when the site says the
   business itself is one; an owner's bio mentioning a nonprofit doesn't count,
   and an LLC's website wording never does), a lender, a public company.
