@@ -19,6 +19,7 @@ import re
 from dataclasses import dataclass
 from datetime import date
 
+from .churchlaw import church_or_law
 from .config import Rules
 from .contacts import is_role_address
 from .crawl import SiteCrawl, crawl_site, is_crawlable, registered_domain
@@ -133,33 +134,11 @@ def disqualify_hits(b: Business, website: str, rules: SbaRules) -> list[SignalHi
     if chain:
         hits.append(_hit("national_chain", 0, f"{chain[0]} is a national chain (national_chains in sba.yaml)",
                          website or SBA_SOURCE, "disqualify"))
-    names = f"{b.legal_name} | {b.dba}"
-    for signal_id, by_name, by_domain in (("church", CHURCH_NAME, None), ("law_firm", LAW_NAME, LAW_DOMAIN)):
-        found = by_name.search(names)
-        if found:
-            hits.append(_hit(signal_id, 0, f"Name: {b.company_name} ({found.group(0).strip()})",
-                             SBA_SOURCE, "disqualify"))
-            continue
-        domain = next((d for d in sorted(domains) if by_domain is not None and by_domain.search(d)), "")
-        if domain:
-            hits.append(_hit(signal_id, 0, f"Domain: {domain}", SBA_SOURCE, "disqualify"))
+    signal_id, why = church_or_law((b.legal_name, b.dba), domains)
+    if signal_id:
+        hits.append(_hit(signal_id, 0, f"Churches and law firms are never leads — {why}",
+                         SBA_SOURCE, "disqualify"))
     return hits
-
-
-# Churches and law firms are never leads (the boss's rule, October 2026).
-# Whole words only, so "Temple Grading", "LaChapelle" and "Delaware" pass.
-# "Church" and the like count only when they name the organization — at the
-# end of the name, or before "of" (Grace Baptist Church Inc, Church of God) —
-# not a business named after them (Church Organs Inc, Cathedral Art Metal Co).
-CHURCH_NAME = re.compile(
-    r"\bministr(?:y|ies)\b|\b(?:arch)?diocese\b|"
-    r"\b(?:church(?:es)?|parish|synagogue|mosque|masjid|cathedral|tabernacle|congregation)\b"
-    r"(?=\s+of\b|[\s,.]*(?:(?:inc|incorporated|corp|corporation|llc)\b\.?)?[\s,.]*(?:\||$))", re.I)
-LAW_NAME = re.compile(
-    r"\blaw (?:firm|offices?|group|center|partners)\b|\b(?:attorneys?|lawyers?)\b|\besq\b\.?|"
-    r"\blaw(?:,)? (?:llc|pllc|llp|pc|p\.c\.|pa|p\.a\.)\b|\b\w+ law\s*(?:\||$)", re.I)
-# smithlaw.com, smithlawfirm.com, jonesattorneys.com — but not delaware.com.
-LAW_DOMAIN = re.compile(r"(?:law|lawfirm|lawoffices?|lawgroup|lawyers?|attorneys?|esq)\.[a-z]+$")
 
 
 def is_llc(b: Business) -> bool:
