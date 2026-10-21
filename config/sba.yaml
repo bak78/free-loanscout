@@ -73,8 +73,6 @@ groups:
         naics: ["44", "45"]
       - name: Manufacturing
         naics: ["31", "32", "33"]
-      - name: Professional services
-        naics: ["5411", "5412", "5413", "5414", "5415", "5416", "5418", "5419"]
 
 # Ticked when the window opens: group names (every industry under them) or
 # single industries. Put a name containing a comma in quotes.

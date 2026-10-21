@@ -266,3 +266,26 @@ def test_a_credentialing_inbox_is_a_department_inbox():
     from free_loanscout.contacts import is_wrong_department
 
     assert is_wrong_department("credentialing@chs-corp.com")
+
+
+def test_an_llcs_website_alone_cant_make_it_a_nonprofit(rules, srules, monkeypatch):
+    def nonprofit_site(url, *args, **kwargs):
+        crawl = SiteCrawl(domain="", start_url=url)
+        crawl.pages = [build_page(url, "<p>We are a nonprofit serving seniors.</p>")]
+        return crawl
+
+    monkeypatch.setattr(leads, "crawl_site", nonprofit_site)
+    llc = leads.build_lead(business(srules, legal_business_name="BUNNY'S HOME CARE, LLC"), StubFetcher(),
+                           rules, srules, 8, TODAY)
+    assert not llc.score.disqualified
+    inc = leads.build_lead(business(srules, legal_business_name="HOPE HOUSE INC"), StubFetcher(),
+                           rules, srules, 8, TODAY)
+    assert inc.score.disqualified and "nonprofit" in inc.score.disqualify_reason
+    # The SBA's own nonprofit code still counts for an LLC.
+    coded = leads.build_lead(business(srules, legal_business_name="X LLC", business_type_codes="A8"),
+                             None, rules, srules, 8, TODAY)
+    assert coded.score.disqualified
+
+
+def test_professional_services_is_no_longer_an_industry(srules):
+    assert "Professional services" not in [f.name for _, fields in srules.groups for f in fields]

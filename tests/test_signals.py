@@ -33,7 +33,7 @@ def test_negation_suppresses_distress_signals(page_factory, rules):
     """Invariant 2: 'we are NOT going out of business' is not distress."""
     hits = match_page(page_factory("negated_closing.html"), rules)
     found = ids(hits)
-    assert "closing_business" not in found
+    assert "closed_or_closing" not in found
     assert "liquidation" not in found
     # the non-negated fit signal still lands
     assert "established_business" in found
@@ -105,3 +105,48 @@ def test_a_lenders_own_notices_still_disqualify(rules):
                  "We are a direct lender serving small businesses", "We offer small business loans"]:
         page = build_page("https://bank.example/", f"<html><body><p>{text}</p></body></html>")
         assert "is_lender" in {h.signal_id for h in match_site([page], rules)}, text
+
+
+def _site_ids(text, rules, url="https://example.com/about"):
+    from free_loanscout.extract import build_page
+    page = build_page(url, f"<html><body><p>{text}</p></body></html>")
+    return {h.signal_id for h in match_site([page], rules)}
+
+
+def test_a_closed_business_is_left_out_not_ranked_up(rules):
+    for text in ["We are permanently closed. Thank you for 12 years!",
+                 "After 20 years we have closed our doors.",
+                 "Our last day of business is November 1.",
+                 "The agency has ceased operations.",
+                 "Everything must go: we're going out of business"]:
+        assert "closed_or_closing" in _site_ids(text, rules), text
+    from free_loanscout.extract import build_page
+    page = build_page("https://example.com/", "<p>We are permanently closed.</p>")
+    hit = next(h for h in match_site([page], rules) if h.signal_id == "closed_or_closing")
+    assert hit.category == "disqualify"
+
+
+def test_hospice_privacy_and_holiday_wording_is_not_closing(rules):
+    """Each of these is from a real, open business's website."""
+    for text in ["Hospice care gives comfort and dignity in a loved one's final days.",
+                 "If we cease operations or are acquired, your data may be transferred.",
+                 "We are closing our doors early on Christmas Eve.",
+                 "We are not permanently closed — just moving down the street!"]:
+        assert "closed_or_closing" not in _site_ids(text, rules), text
+
+
+def test_a_bio_or_mission_statement_is_not_a_nonprofit(rules):
+    """Each of these disqualified a real for-profit lead in October 2026."""
+    for text in ["As my career traversed a busy family medicine practice and a large nonprofit "
+                 "organization, I spent countless hours with seniors.",
+                 "Our mission is to serve families across Maryland with compassionate home care.",
+                 "Jane volunteers with the Red Cross, a charitable organization."]:
+        assert "nonprofit" not in _site_ids(text, rules), text
+
+
+def test_a_business_that_says_it_is_a_nonprofit_still_is(rules):
+    for text in ["We are a nonprofit serving Baltimore since 1990.",
+                 "Hope House is a 501(c)(3) organization.",
+                 "Hope House is a community-based nonprofit.",
+                 "Your gift is a tax-deductible donation."]:
+        assert "nonprofit" in _site_ids(text, rules), text

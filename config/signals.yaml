@@ -241,16 +241,23 @@ signals:
   # DISTRESS — businesses that may need capital to survive.
   # ---------------------------------------------------------------------
 
-  - id: closing_business
-    category: distress
-    weight: 20
+  # A business that says it has closed, or is closing for good, won't borrow:
+  # it is left out (disqualify), not ranked up as distress. Only clear
+  # wording counts: "final days" is on hospice pages and "cease operations"
+  # in privacy policies, so neither is here.
+  - id: closed_or_closing
+    category: disqualify
+    weight: 100
     patterns:
       - "going out of business"
-      - "closing (?:our )?doors"
-      - "final days"
-      - "last day of business"
-      - "permanently clos"
-      - "ceasing operations"
+      - "permanently closed"
+      - "closed permanently"
+      - "closed for good"
+      - "closing (?:our|its|the) doors (?:for good|permanently)"
+      - "(?:we|we've|we have|has|have) (?:officially |permanently )?closed (?:our|its) doors"
+      - "last day of (?:business|operations?)"
+      - "(?:has|have) ceased (?:all )?operations"
+      - "no longer in business"
 
   - id: liquidation
     category: distress
@@ -449,11 +456,13 @@ signals:
     category: disqualify
     weight: 100
     patterns:
-      - "501\\(c\\)\\(3\\)"
-      - "non.?profit organization"
+      # Only the business describing itself: "worked at a large nonprofit
+      # organization" in an owner's bio, or "our mission is to serve" (common
+      # on for-profit home care sites), doesn't count.
+      - "(?:we are|we're|is) an? (?:registered |licensed |private |community.based |[\\w-]+ ){0,2}non.?profit"
+      - "(?:we are|we're|is) an? (?:registered )?501\\(c\\)\\(3\\)"
       - "tax.deductible donation"
-      - "our mission is to serve"
-      - "charitable organization"
+      - "(?:we are|we're|is) an? (?:registered )?charitable organization"
 
   - id: enterprise_scale
     category: disqualify

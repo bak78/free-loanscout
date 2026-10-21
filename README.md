@@ -108,7 +108,12 @@ Before any website is read:
 
 After the website is read:
 
-- **Disqualified by its website** — a nonprofit, a lender, a public company.
+- **Closed** — its website says it has closed or is closing for good
+  ("permanently closed", "we have closed our doors", "last day of business").
+  Hospice wording ("final days") and privacy policies don't count.
+- **Disqualified by its website** — a nonprofit (only when the site says the
+  business itself is one; an owner's bio mentioning a nonprofit doesn't count,
+  and an LLC's website wording never does), a lender, a public company.
 - **Chains and groups** — a website domain shared by 3 or more businesses
   in the results (franchises, listed in `franchise_domains`, stay).
 

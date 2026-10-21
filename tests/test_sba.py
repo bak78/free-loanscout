@@ -47,7 +47,7 @@ class FakeClient:
 
 def test_the_three_columns_and_their_industries(srules):
     assert [g for g, _ in srules.groups] == ["Healthcare", "Construction", "Other fields"]
-    assert all(len(fields) == 8 for _, fields in srules.groups)
+    assert [len(fields) for _, fields in srules.groups] == [8, 8, 7]
     assert srules.field_named("home care").covers("621610")
     assert srules.field_named("Home care").covers("624120")  # non-medical home care too
 

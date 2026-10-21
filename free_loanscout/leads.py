@@ -136,6 +136,12 @@ def disqualify_hits(b: Business, website: str, rules: SbaRules) -> list[SignalHi
     return hits
 
 
+def is_llc(b: Business) -> bool:
+    """An LLC is almost never a nonprofit, so its website's wording alone
+    (an owner's bio: "worked at a large nonprofit") can't make it one."""
+    return re.search(r"\bl\.?\s?l\.?\s?c\b", f"{b.legal_name} {b.dba}".lower()) is not None
+
+
 def website_check(b: Business, website: str, crawl: SiteCrawl | None, rules: SbaRules) -> str:
     """What reading the website showed. A franchise brand's page (a Home
     Instead office) counts as the owner's own even when it doesn't load:
@@ -176,6 +182,8 @@ def build_lead(
                 break
 
     site_hits = match_site(crawl.pages, rules) if crawl is not None and crawl.pages else []
+    if is_llc(b):
+        site_hits = [h for h in site_hits if h.signal_id != "nonprofit"]
     hits = sba_hits(b, sba_rules, today) + disqualify_hits(b, website, sba_rules) + site_hits
     w = sba_rules.weights
     if check in (SITE_OWN, SITE_FRANCHISE):
