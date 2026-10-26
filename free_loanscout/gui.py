@@ -4,6 +4,23 @@ It drives exactly the same run code as the command line, on a background
 thread so the window stays responsive. Log lines are handed to the window
 through a queue, because Tk may only be touched from its own thread.
 
+How it works:
+
+- The form has three steps: where (state and ZIP code starts), which
+  industries (one column of checkboxes per group in sba.yaml, each with a
+  tick-all heading), and how many businesses to check. Its defaults come
+  from sba.yaml.
+- Preview and Run turn the form into cli.RunOptions (options_from_inputs,
+  which explains any mistake in plain words) and start cli.run_leads on a
+  worker thread. Stop sets the threading.Event that run watches.
+- QueueHandler puts every log line on a queue; pump() runs on Tk's own
+  thread ten times a second, moves the lines into the log box, and when the
+  worker has finished, shows what its exit code means (OUTCOMES).
+- Open results opens the newest results CSV (the run's or the preview's) in
+  whatever opens .csv files; Open folder opens out/.
+- apply_brand() colours the window in Capital Sense Funding's palette, and
+  the logo is shown when assets/ has it.
+
 Start it by double-clicking "Free LoanScout GUI.bat", or:
     .venv\\Scripts\\python -m free_loanscout.gui
 """

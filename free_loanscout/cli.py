@@ -5,9 +5,33 @@
          websites, score, and append to the CSV. Every step is free: there
          are no paid lookups and no API keys.
 
+How a run works (run_leads, used by both the command line and the window):
+
+1. Load the settings (signals.yaml, sba.yaml, .env) and check the state, ZIP
+   codes and industries asked for.
+2. Ask the SBA for every business in those industries and that area
+   (sba.find_businesses).
+3. Rank them on SBA facts alone — years in business, the contact's own
+   email, certifications — so the strongest are checked first.
+4. Screen them with free checks before any website is read (screen): the
+   email must pass emailcheck (domains are checked many at a time), and the
+   business must not be disqualified, part of a chain sharing one email
+   domain, a department inbox (hr@, billing@), or a repeat of an email or a
+   contact already used. Those left out go to the left-out file with their
+   reason and are never checked again.
+5. For the top --limit businesses not already done, read their websites and
+   score them on a thread pool (leads.build_lead). Each finished business is
+   written to the CSV straight away; a disqualified one goes to the left-out
+   file instead.
+6. At the end, move chains' rows out of the results, sort the CSV by score,
+   and print a summary of where every business ended up.
+
+--dry-run (the window's Preview) stops after step 4 and writes a separate
+_preview.csv scored on SBA facts alone, marking nothing done.
+
 A run takes an optional threading.Event so the window's Stop button can end
 it the same way Ctrl+C does: finished work is kept, the rest resumes on the
-next run.
+next run. The exit codes below tell the window what happened.
 """
 
 from __future__ import annotations

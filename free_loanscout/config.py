@@ -1,5 +1,26 @@
 """Configuration loading: .env for secrets, signals.yaml for website scoring
-rules. Which SBA businesses count as leads lives in sba.yaml, loaded by sba.py."""
+rules. Which SBA businesses count as leads lives in sba.yaml, loaded by sba.py.
+
+What it does: load_settings() reads the crawler's contact email from .env
+(CRAWLER_CONTACT_EMAIL, put in the User-Agent so site owners can reach us)
+and the scoring rules from config/signals.yaml, and returns them as frozen
+dataclasses the rest of the program shares.
+
+How it works: load_rules() parses the YAML and checks it as it goes, raising
+ConfigError with a message that says what to fix — a duplicate signal id, an
+unknown category, a regex that doesn't compile, a weight or saturation that
+can't be used. Along the way it:
+
+- compiles every signal's patterns once, case-insensitive, into Signal;
+- normalizes the growth/distress/fit weights so they sum to 1;
+- joins the negation phrases into one regex, so checking for "not" or "no
+  longer" before a match is a single scan;
+- keeps the page types (URL fragments like /careers), the crawl priority
+  order, and the domain and TLD blocklists.
+
+Rules.page_type() classifies a URL by those fragments ('other' when none
+match); crawl.py and signals.py use it.
+"""
 
 from __future__ import annotations
 

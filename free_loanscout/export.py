@@ -5,6 +5,22 @@ halfway still leaves a usable file. A sibling seen.txt of SBA business IDs
 (UEI) lets a re-run skip businesses already done — which is what lets each
 run continue down the ranked list instead of reading the same websites
 twice.
+
+How it works:
+
+- COLUMNS is the CSV's layout; build_row() fills it from a Lead — the
+  contact, the scores, the SBA facts, the top three pieces of evidence and
+  any crawl errors. The phone the business gave the SBA comes first; its
+  website's is used only when it gave none.
+- CsvWriter appends rows under a lock, so worker threads can share it. With
+  each row it also appends the business's ID to <results>.seen.txt and its
+  email to <results>.emails.txt. Both files only ever grow (unless a run
+  starts over), so deleting the results to start a fresh batch never makes
+  a later batch repeat a business or an inbox. mark_done() records a
+  business as finished without writing a row (one that was left out).
+- Opening an existing CSV from an older version rewrites it with the current
+  columns first, so new rows don't land under the wrong headings.
+- sort_csv_by_score() rewrites the finished CSV highest score first.
 """
 
 from __future__ import annotations

@@ -8,6 +8,24 @@ time; it can't narrow by state, so the state is picked out here. Each day's
 answers are saved under data/, so a second run the same day asks nothing.
 
 Which industries count, and their codes, live in config/sba.yaml.
+
+How it works:
+
+- load_sba_rules() reads sba.yaml: the industry checkboxes, grouped, each
+  with the NAICS code starts it covers (6211 covers every doctor's office),
+  plus the default area, the weights and the chain and franchise lists.
+- SbaClient talks to the SBA: it fetches the SBA's list of every NAICS code
+  (kept for 30 days) to expand code starts into full codes, then posts the
+  search page's own request for those codes. It pauses between requests,
+  keeps only the fields used, saves each answer under data/sba/<date>/, and
+  raises SearchStopped when Stop is pressed.
+- find_businesses() asks once per ticked industry, keeps the businesses in
+  the chosen state and ZIP codes, and counts each under its MAIN industry
+  only, so one business isn't found twice.
+- parse_business() turns one record into a Business, skipping any without a
+  public email or a contact's full name. It tidies ALL-CAPS names, splits
+  the contact into first and last name (dropping Dr, Jr, MD...), formats the
+  phone, and notes certifications and nonprofit status.
 """
 
 from __future__ import annotations

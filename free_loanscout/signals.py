@@ -1,5 +1,16 @@
 """Rules engine: match signals against page text and capture evidence.
 
+What it does: match_site() runs every signal in signals.yaml over a site's
+pages and returns which ones fired, each with the snippet of text that
+triggered it and the page it was on — the evidence shown in the CSV.
+
+How it works: for each page and each signal, the signal's regexes are run
+over the page's title, description and text. The first match not preceded
+by a negation counts; its weight is multiplied by the signal's page bonus
+for that page type (hiring found on /careers counts more). Across the site,
+only the highest-weight hit per signal is kept, and the hits are returned
+highest weight first.
+
 Two invariants keep scores honest and are covered by tests:
 
 1. Distinct signal ids are counted, never occurrences. A job board repeating

@@ -7,6 +7,16 @@ A lead goes out only with an address that passes every free check:
 - its domain isn't a known misspelling of a big mail provider (gmial.com);
 - its domain exists and accepts mail: DNS lists a mail server (MX record) for it.
 
+How it works: EmailChecker.problem() returns why an address fails, or ''
+when it passes. The first checks need only the address itself, so they run
+instantly; big providers (gmail, yahoo…) are known to take mail and skip DNS.
+Anything else asks DNS for the domain's MX records, once per domain per run
+— the answer is remembered behind a lock, so many threads can share one
+checker. A domain that doesn't exist, or has no mail server (or a "null MX"
+saying it takes none), fails. When DNS itself doesn't answer,
+EmailCheckUnavailable is raised instead, so the address is retried on the
+next run rather than wrongly failed.
+
 What this can't tell is whether the mailbox itself still exists — whether
 jsmith@ left the company. Mail providers don't answer that for free; a paid
 verifier (NeverBounce, ZeroBounce…) checks it before a send.

@@ -1,4 +1,19 @@
-"""HTML -> clean text. Chrome (nav/footer/script) is stripped before scoring."""
+"""HTML -> clean text. Chrome (nav/footer/script) is stripped before scoring.
+
+What it does: build_page() turns one fetched page's HTML into a Page — its
+title, meta description, readable body text, page type and the contacts on
+it — which is what the signals are matched against. extract_links() lists
+the page's links for the crawler.
+
+How it works: BeautifulSoup parses the HTML. The title and meta description
+are read first; then scripts, styles, navigation, SVGs and forms are removed
+and the remaining body text is collapsed to single spaces. Footers are kept
+on purpose (see _STRIP_TAGS). Contacts are found separately, from the raw
+HTML, by contacts.find_contacts, since they also live in links and
+structured data. Links are made absolute, stripped of #fragments, limited to
+http(s), and de-duplicated in page order; mailto:, tel: and javascript:
+links are skipped.
+"""
 
 from __future__ import annotations
 

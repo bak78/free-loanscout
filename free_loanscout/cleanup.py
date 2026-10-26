@@ -1,8 +1,8 @@
 """Keep the results to real small-business leads.
 
-Rows that aren't leads move out of the results into a sibling file,
-<results>_left_out.csv, with the reason in its first column, so they can
-still be reviewed (and copied back if a rule was wrong about one):
+What it does: rows that aren't leads move out of the results into a sibling
+file, <results>_left_out.csv, with the reason in its first column, so they
+can still be reviewed (and copied back if a rule was wrong about one):
 
 - disqualified companies (nonprofits, lenders, public companies, directory
   sites), as each one is found;
@@ -12,10 +12,18 @@ still be reviewed (and copied back if a rule was wrong about one):
   building-products group's subsidiaries). Each files separately — with the
   SBA, the NPI registry or US DOT — so nothing else reveals it.
 
+How it works: LeftOutWriter appends a row and its reason to the left-out
+file, writing the header the first time. leave_out_chains() reads the whole
+results CSV, collects each row's own domains (its email's, its filed email's
+and its website's), counts how many different companies share each domain,
+writes every row on a domain shared by min_companies or more to the left-out
+file, and rewrites the results with the rest.
+
 Domains that many unrelated businesses share without being one company never
-count: email providers (gmail, comcast, cox…), website builders (wixsite…),
-directories, and the franchise brands listed in the settings, whose offices
-are independently owned small businesses.
+count (never_a_chain builds the list): email providers (gmail, comcast,
+cox…), website builders (wixsite…), .gov/.edu/.mil sites, the domain
+blocklist in signals.yaml, and the franchise brands listed in sba.yaml, whose
+offices are independently owned small businesses.
 """
 
 from __future__ import annotations

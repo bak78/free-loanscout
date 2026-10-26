@@ -3,6 +3,25 @@
 An 8-page budget spent breadth-first lands on privacy policies. Spent on the
 careers and news pages, it lands where growth and distress signals actually
 live — so links are ranked by page type before anything is fetched.
+
+How crawl_site() works:
+
+1. Fetch the homepage (through fetch.PoliteFetcher). If it fails, the site
+   fails, and a failure that will never change (DNS, 404, robots.txt) is
+   marked permanent.
+2. Collect the homepage's links to the same domain, classify each by its URL
+   (Rules.page_type), drop the unclassified ones, and order the rest by
+   crawl_priority in signals.yaml (careers, news, about, contact, services).
+3. Take the top max_pages - 1. The contact page always gets a slot, first,
+   since it's where the email and phone live.
+4. Fetch them in order, stopping early when the site has used its time
+   budget or two pages in a row timed out or failed.
+
+The result, a SiteCrawl, holds the cleaned pages, the errors, a best guess at
+the business name (from the homepage title) and the site's best contacts.
+registered_domain() and is_crawlable() are the domain helpers the rest of the
+program uses: example.co.uk from a URL, and whether a site is a business site
+worth reading (not a blocklisted platform, directory or TLD).
 """
 
 from __future__ import annotations

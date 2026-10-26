@@ -1,8 +1,24 @@
 """Polite HTTP fetching: robots.txt, per-host rate limiting, retries, caps.
 
-The per-host delay is enforced with a lock keyed by hostname, so it holds even
-though the CLI crawls many domains concurrently. Workers are spread across
-domains precisely so this serialization is never the bottleneck.
+What it does: PoliteFetcher.get(url) fetches one page and returns a
+FetchResult — the HTML, or the status and error that explain why not, and
+whether that failure is permanent (a 404, a DNS failure, robots.txt saying
+no) so later runs don't try again.
+
+How it works:
+
+- robots.txt is fetched once per host and cached; a disallowed URL is never
+  requested. A Crawl-delay in it is honored, and a site asking for more than
+  MAX_CRAWL_DELAY seconds is skipped rather than crawled faster than asked.
+- The per-host delay is enforced with a lock keyed by hostname, so it holds
+  even though the CLI crawls many domains concurrently. Workers are spread
+  across domains precisely so this serialization is never the bottleneck.
+- 429 and 5xx answers and network errors are retried with a growing pause
+  (1s, 2s); other non-200 answers and non-HTML content are returned at once.
+- A page is read for at most MAX_BYTES and PAGE_DEADLINE seconds, so a huge
+  or slow-trickling page can't stall a run; what arrived is kept.
+- stop() makes every waiting and future request return straight away, which
+  is how Stop and Ctrl+C end a run quickly.
 """
 
 from __future__ import annotations

@@ -11,6 +11,23 @@ the one on its SBA record, or else the site on its email's domain. A website
 that loads on the email's domain shows the business is real and running, and
 its pages carry the growth and warning signs (hiring, a nonprofit or lender
 notice...).
+
+How build_lead() works:
+
+1. Try the websites in order (websites_to_try) until one loads, crawling
+   each with crawl.crawl_site. With fetcher=None (the ranking and the
+   preview) this step is skipped and only SBA facts are scored.
+2. Collect the hits: the SBA record's (sba_hits — registered, established,
+   the contact's own email, a company domain, certifications), the
+   disqualifiers (disqualify_hits — nonprofit, a government or school
+   address, a national chain, a church or law firm), and the website's
+   signals (signals.match_site). An LLC's site can't make it a nonprofit.
+3. Add a hit for what the website check found (website_check): its own site
+   loading counts most, a site on another domain less.
+4. Score it all with score.score_site and return the Lead.
+
+email_belongs_to() decides whether an address carries the contact's name
+(jane.doe@, jdoe@, jane@ — never info@).
 """
 
 from __future__ import annotations

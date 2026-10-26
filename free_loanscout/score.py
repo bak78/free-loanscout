@@ -4,6 +4,14 @@ Each category's raw weight sum is passed through a saturation curve
 (100 * raw / (raw + k)) rather than a hard cap, so a site with many weak
 signals and one with a few strong ones separate cleanly instead of both
 pinning at 100.
+
+How score_site() works: the hits' weights are added up per category
+(growth, distress, fit) and each sum is saturated with that category's k
+from signals.yaml, giving three 0-100 sub-scores. The total is their
+weighted average, using the category weights. Any disqualifying hit makes
+the total 0 and records which rules fired, while keeping the sub-scores, so
+the reason stays visible in the left-out file and the rule can be tuned. The
+hits are kept, highest weight first, as the evidence for the CSV.
 """
 
 from __future__ import annotations

@@ -1,14 +1,28 @@
 """Churches and law firms are never leads (the boss's rule, October 2026).
 
-Caught by name or by an email or website domain, before any lookup; the
-website wording ("join us for worship", "attorneys at law") is caught by the
-church and law_firm signals in signals.yaml.
+What it does: church_or_law() looks at a business's names (legal name and
+"doing business as" name) and its email and website domains, and says whether
+it is a church or a law firm, with the words that gave it away. leads.py
+turns a yes into a disqualifying hit, so the business goes to the left-out
+file before any website is read. The website wording ("join us for worship",
+"attorneys at law") is caught separately, by the church and law_firm signals
+in signals.yaml.
 
-Whole words only, so "Temple Grading", "LaChapelle" and "Delaware" pass.
-"Church" and the like count only when they name the organization — at the end
-of the name, or before "of" (Grace Baptist Church Inc, Church of God) — not a
-business named after one (Church Organs Inc, Cathedral Art Metal Co, or a
-contractor whose owner is called Church).
+How it works: three regular expressions.
+
+- CHURCH_NAME matches church, parish, synagogue, mosque, diocese, ministry
+  and the like — but "church" and its kin count only when they name the
+  organization: at the end of the name (allowing a trailing Inc or LLC), or
+  before "of" (Grace Baptist Church Inc, Church of God). A business named
+  after one passes (Church Organs Inc, Cathedral Art Metal Co, or a
+  contractor whose owner is called Church).
+- LAW_NAME matches "law firm", "law offices", attorney, lawyer, Esq, "Law
+  LLC" and a name ending in "Law" (Smith Law).
+- LAW_DOMAIN matches domains ending in law, lawfirm, attorneys and so on
+  (smithlaw.com, jonesattorneys.com).
+
+Names are checked before domains. Whole words only, so "Temple Grading",
+"LaChapelle" and "delaware.com" pass.
 """
 
 from __future__ import annotations

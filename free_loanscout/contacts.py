@@ -4,6 +4,28 @@ Only what appears on the crawled pages is collected — nothing is guessed,
 inferred from name patterns, or looked up elsewhere. A detail that isn't found
 is left blank; a wrong address is worse than none.
 
+How it works, per page (find_contacts):
+
+1. mailto: and tel: links first — the site deliberately saying "contact us
+   here" is the strongest evidence.
+2. Then schema.org structured data (JSON-LD), which often carries the
+   canonical email and telephone even when the visible page hides them.
+3. Then the visible text, after "info [at] shop [dot] com" is un-obfuscated.
+   Phones in text need their separators, so order numbers don't match, and a
+   number just after the word "fax" is skipped. Image names (logo@2x.png)
+   and site-builder or error-tracker addresses are thrown away.
+
+Across a site (summarize), the best email is picked: one on the site's own
+domain beats a gmail address, which beats anyone else's (a web designer's in
+the footer credit); a person (maria@) beats a role inbox (info@); then
+whichever appears on the most pages, with the contact page and homepage
+first. The best phone is the one repeated on the most pages — the main line
+sits in every header and footer.
+
+is_role_address() and is_wrong_department() sort inboxes: role inboxes
+(info@, sales@) belong to a function, not a person; department inboxes (hr@,
+billing@, careers@) won't reach the owner at all.
+
 Phone parsing is North American (NANP) only, matching the US lending focus of
 the rest of the rules. Other formats are ignored rather than half-parsed.
 """
