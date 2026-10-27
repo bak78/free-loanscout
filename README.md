@@ -174,6 +174,12 @@ CRAWLER_CONTACT_EMAIL=you@yourcompany.com
 - Websites are read politely: a pause between pages on one site, and
   `robots.txt` is respected.
 
+## The code
+
+Each file in `free_loanscout\` starts with a note on what it does and how it
+works. `free_loanscout\__init__.py` lists every file and the order a run uses
+them in — the place to start reading.
+
 ## Tests
 
 ```
