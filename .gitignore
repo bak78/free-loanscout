@@ -5,6 +5,9 @@ __pycache__/
 *.pyc
 .pytest_cache/
 data/
+# leads written by simple_sba.py: real people's contact details
+simple_leads.csv
+beginner_leads.csv
 # any variant of the key file, e.g. a .env.txt saved by Notepad
 .env.*
 !.env.example

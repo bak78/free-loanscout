@@ -180,6 +180,11 @@ Each file in `free_loanscout\` starts with a note on what it does and how it
 works. `free_loanscout\__init__.py` lists every file and the order a run uses
 them in — the place to start reading.
 
+`simple_sba.py` is a one-file version of the SBA search, for learning how it
+works: it asks the SBA for one industry in one state and saves the businesses
+with a public contact to `simple_leads.csv`. It skips the email check, the
+website reading and the score. Run it with `.venv\Scripts\python simple_sba.py`.
+
 ## Tests
 
 ```
